@@ -96,7 +96,7 @@ public class BasicScopeAuthorizationStrategyTest {
     when(metadataService.getEntity("123")).thenReturn(openEntity);
 
     val scopeStrs =
-        new HashSet<String>(Arrays.asList("test1.download", "test.download", "test.OTHER-CODE.upload",
+        new HashSet<String>(Arrays.asList("test1.download", TEST_SCOPE, "test.OTHER-CODE.upload",
             "test.ALT-CODE.upload", "test.CODE.upload", "test2.download"));
     List<AuthScope> scopes = sut.extractScopes(scopeStrs);
 
@@ -122,7 +122,7 @@ public class BasicScopeAuthorizationStrategyTest {
   @Test
   public void test_verify_basic_scopes_happy_path() {
     val scopeStrs =
-        new HashSet<String>(Arrays.asList("test1.download", "test.download", "test.OTHER-CODE.upload",
+        new HashSet<String>(Arrays.asList("test1.download", TEST_SCOPE, "test.OTHER-CODE.upload",
             "test.ALT-CODE.upload", "test.CODE.upload", "test2.download"));
     List<AuthScope> scopes = sut.extractScopes(scopeStrs);
 
