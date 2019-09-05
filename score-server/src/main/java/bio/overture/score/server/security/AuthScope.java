@@ -66,6 +66,10 @@ public class AuthScope {
     return (getSystem().equals(rule.getSystem()) && getOperation().equals(rule.getOperation()));
   }
 
+  public boolean allows(AuthScope rule) {
+    return matches(rule) && (getProject().equals(rule.getProject()) || rule.allowAllProjects());
+  }
+
   public boolean allowAllProjects() {
     return ALL_PROJECTS.equals(project);
   }

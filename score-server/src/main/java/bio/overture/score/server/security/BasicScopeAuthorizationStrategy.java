@@ -27,6 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import javax.xml.bind.annotation.XmlAccessType;
+
 @Slf4j
 public class BasicScopeAuthorizationStrategy extends AbstractScopeAuthorizationStrategy {
 
@@ -57,21 +59,20 @@ public class BasicScopeAuthorizationStrategy extends AbstractScopeAuthorizationS
   }
 
   protected boolean verifyAccessType(@NonNull List<AuthScope> grantedScopes, @NonNull final String objectId) {
-    val objectAccessType = fetchObjectAccessType(objectId);
-    val accessType = new Access(objectAccessType);
+    val accessType = fetchObjectAccessType(objectId);
 
     if (accessType.isOpen()) {
       return true;
-    } else if (accessType.isControlled()) {
-      return verifyBasicScope(grantedScopes);
-    } else {
-      val msg =
-          String.format("Invalid access type '%s' found in Metadata record for object id: %s", objectAccessType,
-              objectId);
-      log.error(msg);
-      throw new NotRetryableException(new IllegalArgumentException(msg));
     }
+    return verifyBasicScope(grantedScopes);
   }
+
+  // Verify that user has a scope with the right system and operation, but don't worry about their projects
+  // In other words, they need score.<some-project>.download to download protected files.
+  // For ICGC, DACO members should have collab.READ = collab.*.READ, which is okay.
+  // It's probably more correct to ensure that the project matches, too, since it will for ICGC, and
+  // later on, it will depend upon the amount time that the data has been published, *and* the program membership
+  // types that the user is a member of.
 
   protected boolean verifyBasicScope(@NonNull List<AuthScope> grantedScopes) {
     boolean result = false;
@@ -81,20 +82,28 @@ public class BasicScopeAuthorizationStrategy extends AbstractScopeAuthorizationS
   }
 
   /**
-   * Retrieve project code from Metadata Service for specific object id
+   * Retrieve access control level (open/controlled) from Metadata Service for specific object id
    * @param objectId
-   * @return project code
+   * @return access control level
    */
-  protected String fetchObjectAccessType(@NonNull final String objectId) {
+  protected Access fetchObjectAccessType(@NonNull final String objectId) {
     // makes a query to meta service to retrieve project code for the given object id
     val entity = metadataService.getEntity(objectId);
     if (entity != null) {
-      return entity.getAccess();
+      val accessType = entity.getAccess();
+      val access = new Access(accessType);
+      if (access.isOther()) {
+        val msg =
+          String.format("Invalid access type '%s' found in Metadata record for object id: %s", accessType,
+            objectId);
+        log.error(msg);
+        throw new NotRetryableException(new IllegalArgumentException(msg));
+      }
+      return access;
     } else {
       val msg = String.format("Failed to retrieve metadata for objectId: %s", objectId);
       log.error(msg);
       throw new NotRetryableException(new IllegalArgumentException(msg));
     }
   }
-
 }
