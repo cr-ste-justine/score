@@ -22,6 +22,10 @@
 # Profile - common
 ###############################################################################
 
+score:
+  security:
+    enabled: true
+
 server:
   port: 5431
   compression:

@@ -68,6 +68,9 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
   @Value("${auth.server.downloadScope}")
   private String downloadScope;
 
+  @org.springframework.beans.factory.annotation.Value("${score.security.enabled:true}")
+  private boolean securityIsEnabled;
+
   @Override
   public void configure(HttpSecurity http) throws Exception {
     http.addFilterAfter(new OncePerRequestFilter() {
@@ -115,18 +118,24 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
     log.info("using upload scope: {}", uploadScope);
     log.info("using download scope: {}", downloadScope);
 
-    // @formatter:off     
-    http
-      .authorizeRequests()
-      .antMatchers("/health").permitAll()
-      .antMatchers("/upload/**").permitAll()
-      .antMatchers("/download/**").permitAll()
-      .and()
-      
-      .authorizeRequests()
-      .anyRequest().authenticated();
-    // @formatter:on
-    log.info("initialization done");
+    // @formatter:off
+    if(this.securityIsEnabled) {     
+      http
+        .authorizeRequests()
+        .antMatchers("/health").permitAll()
+        .antMatchers("/upload/**").permitAll()
+        .antMatchers("/download/**").permitAll()
+        .antMatchers("/swagger**", "/swagger-resources/**", "/v2/api**", "/webjars/**")
+        .permitAll()
+        .and()
+        
+        .authorizeRequests()
+        .anyRequest().authenticated();
+      // @formatter:on
+      log.info("initialization done");
+    } else {
+      http.authorizeRequests().anyRequest().permitAll();
+    }
   }
 
   @Bean
