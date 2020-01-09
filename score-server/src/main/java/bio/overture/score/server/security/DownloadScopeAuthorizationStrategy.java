@@ -27,8 +27,8 @@ import java.util.List;
 
 @Slf4j
 public class DownloadScopeAuthorizationStrategy extends UploadScopeAuthorizationStrategy {
-  public DownloadScopeAuthorizationStrategy(String authScope, MetadataService metadataService) {
-      super(authScope, metadataService);
+  public DownloadScopeAuthorizationStrategy(String authScope, MetadataService metadataService, boolean securityIsEnabled) {
+      super(authScope, metadataService, securityIsEnabled);
   }
 
   @Override
@@ -36,7 +36,9 @@ public class DownloadScopeAuthorizationStrategy extends UploadScopeAuthorization
     val objectAccessType = fetchObjectAccessType(objectId);
     val accessType = new Access(objectAccessType);
 
-    if (accessType.isOpen()) {
+    if(!this.securityIsEnabled) {
+      return true;
+    } else if (accessType.isOpen()) {
       return true;
     } else if (accessType.isControlled()) {
         return super.verify(grantedScopes, objectId);

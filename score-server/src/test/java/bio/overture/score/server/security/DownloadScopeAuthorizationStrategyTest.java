@@ -47,7 +47,7 @@ public class DownloadScopeAuthorizationStrategyTest {
   @Before
   public void init() {
     metadataService = mock(MetadataService.class);
-    sut = new DownloadScopeAuthorizationStrategy(TEST_SCOPE, metadataService);
+    sut = new DownloadScopeAuthorizationStrategy(TEST_SCOPE, metadataService, true);
   }
 
   private List<AuthScope> getScopes(String... scopeStrings) {

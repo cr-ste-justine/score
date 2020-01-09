@@ -30,14 +30,20 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UploadScopeAuthorizationStrategy extends AbstractScopeAuthorizationStrategy {
   MetadataService metadataService;
+  boolean securityIsEnabled;
 
-  public UploadScopeAuthorizationStrategy(String scope, MetadataService metadataService) {
+  public UploadScopeAuthorizationStrategy(String scope, MetadataService metadataService, boolean securityIsEnabled) {
     super(AuthScope.from(scope));
     this.metadataService = metadataService;
+    this.securityIsEnabled = securityIsEnabled;
   }
 
   @Override
   protected boolean verify(@NonNull List<AuthScope> grantedScopes, @NonNull final String objectId) {
+    if(!this.securityIsEnabled) {
+      return true;
+    }
+    
     if (grantedScopes.stream().anyMatch(AuthScope::allowAllProjects)) {
       log.info("Access granted to blanket scope");
       return true;

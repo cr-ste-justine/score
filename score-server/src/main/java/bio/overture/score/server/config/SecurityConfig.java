@@ -125,8 +125,6 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
         .antMatchers("/health").permitAll()
         .antMatchers("/upload/**").permitAll()
         .antMatchers("/download/**").permitAll()
-        .antMatchers("/swagger**", "/swagger-resources/**", "/v2/api**", "/webjars/**")
-        .permitAll()
         .and()
         
         .authorizeRequests()
@@ -140,13 +138,13 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
 
   @Bean
   public UploadScopeAuthorizationStrategy projectSecurity(MetadataService song) {
-    return new UploadScopeAuthorizationStrategy(uploadScope, song);
+    return new UploadScopeAuthorizationStrategy(uploadScope, song, this.securityIsEnabled);
   }
 
   @Bean
   @Scope("prototype")
   public DownloadScopeAuthorizationStrategy accessSecurity(MetadataService song) {
-    return new DownloadScopeAuthorizationStrategy(downloadScope, song);
+    return new DownloadScopeAuthorizationStrategy(downloadScope, song, this.securityIsEnabled);
   }
 }
 

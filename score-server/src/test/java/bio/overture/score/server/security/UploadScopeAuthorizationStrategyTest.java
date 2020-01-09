@@ -49,7 +49,7 @@ public class UploadScopeAuthorizationStrategyTest {
     when(meta.getEntity("1")).thenReturn(e1);
     when(meta.getEntity("2")).thenReturn(e2);
 
-    sut = new UploadScopeAuthorizationStrategy(TEST_SCOPE, meta);
+    sut = new UploadScopeAuthorizationStrategy(TEST_SCOPE, meta, true);
   }
 
   @Test
