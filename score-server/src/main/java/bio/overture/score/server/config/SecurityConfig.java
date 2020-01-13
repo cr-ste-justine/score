@@ -55,7 +55,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Configuration
-@Profile("secure")
 @EnableWebSecurity
 @EnableResourceServer
 public class SecurityConfig extends ResourceServerConfigurerAdapter {
@@ -126,7 +125,6 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
         .antMatchers("/upload/**").permitAll()
         .antMatchers("/download/**").permitAll()
         .and()
-        
         .authorizeRequests()
         .anyRequest().authenticated();
       // @formatter:on

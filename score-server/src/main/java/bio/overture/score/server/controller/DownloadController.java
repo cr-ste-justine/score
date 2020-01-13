@@ -57,20 +57,24 @@ public class DownloadController {
 
   @RequestMapping(method = RequestMethod.GET, value = "/ping")
   public @ResponseBody String ping(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) final String accessToken,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false, defaultValue = "<none>") final String accessToken,
       @RequestHeader(value = "User-Agent", defaultValue = "unknown") String userAgent, HttpServletRequest request) {
 
     val ipAddress = HttpServletRequests.getIpAddress(request);
 
-    log.info("Requesting download of sentinel object id with access token {} (MD5) from {} and client version {}",
-        identifier(accessToken), ipAddress, userAgent);
+    log.info(
+      "Requesting download of sentinel object id with access token {} (MD5) from {} and client version {}",
+      identifier(accessToken), 
+      ipAddress, 
+      userAgent
+    );
     return downloadService.getSentinelObject();
   }
 
   @PreAuthorize("@accessSecurity.authorize(authentication,#objectId)")
   @RequestMapping(method = RequestMethod.GET, value = "/{object-id}")
   public @ResponseBody ObjectSpecification downloadPartialObject(
-      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) final String accessToken,
+      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false, defaultValue = "<none>") final String accessToken,
       @PathVariable(value = "object-id") String objectId,
       @RequestParam(value = "offset", required = true) long offset,
       @RequestParam(value = "length", required = true) long length,
@@ -81,8 +85,13 @@ public class DownloadController {
 
     val ipAddress = HttpServletRequests.getIpAddress(request);
 
-    log.info("Requesting download of object id {} with access token {} (MD5) from {} and client version {}", objectId,
-        identifier(accessToken), ipAddress, userAgent);
+    log.info(
+      "Requesting download of object id {} with access token {} (MD5) from {} and client version {}", 
+      objectId,
+      identifier(accessToken), 
+      ipAddress, 
+      userAgent
+    );
     return downloadService.download(objectId, offset, length, external, excludeUrls);
   }
 
