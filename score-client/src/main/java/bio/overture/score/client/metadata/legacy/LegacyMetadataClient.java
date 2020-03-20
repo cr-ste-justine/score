@@ -38,6 +38,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,6 +56,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 @Component
 public class LegacyMetadataClient {
 
+  private final String jwt;
   /**
    * Constants.
    */
@@ -68,12 +70,17 @@ public class LegacyMetadataClient {
   private final String serverUrl;
 
   @Autowired
-  public LegacyMetadataClient(@Value("${metadata.url}") String serverUrl, @Value("${metadata.ssl.enabled}") boolean ssl) {
+  public LegacyMetadataClient(
+    @Value("${metadata.url}") String serverUrl, 
+    @Value("${metadata.ssl.enabled}") boolean ssl,
+    @Value("${client.accessToken}") @NonNull String jwt
+  ) {
     if (!ssl) {
       SSLCertificateValidation.disable();
     }
 
     this.serverUrl = serverUrl;
+    this.jwt = jwt;
   }
 
   public Entity findEntity(@NonNull String objectId) throws EntityNotFoundException {
@@ -95,7 +102,14 @@ public class LegacyMetadataClient {
   @SneakyThrows
   private Entity read(@NonNull String path) {
     try {
-      return MAPPER.readValue(resolveUrl(path), Entity.class);
+      val url = resolveUrl(path);
+      URLConnection uc = url.openConnection();
+      uc.setRequestProperty(
+        "Authorization", 
+        "Bearer "+jwt
+      );
+      
+      return MAPPER.readValue(uc.getInputStream(), Entity.class);
     } catch (FileNotFoundException e) {
       throw new EntityNotFoundException(e.getMessage());
     }
@@ -111,8 +125,13 @@ public class LegacyMetadataClient {
       while (!last) {
         val url = resolveUrl(path + (path.contains("?") ? "&" : "?") + "size=2000&page=" + pageNumber);
         log.debug("Getting {}...", url);
+        URLConnection uc = url.openConnection();
+        uc.setRequestProperty(
+          "Authorization", 
+          "Bearer "+jwt
+        );
 
-        val result = MAPPER.readValue(url, ObjectNode.class);
+        val result = MAPPER.readValue(uc.getInputStream(), ObjectNode.class);
         last = result.path("last").asBoolean();
         List<Entity> page = MAPPER.convertValue(result.path("content"), new TypeReference<ArrayList<Entity>>() {});
 
@@ -131,10 +150,15 @@ public class LegacyMetadataClient {
   @SneakyThrows
   public List<String> getObjectIdsByAnalysisId(@NonNull String programId, @NonNull String analysisId) {
     val url = new URL(serverUrl + "/studies/" + programId + "/analysis/" + analysisId + "/files");
+    URLConnection uc = url.openConnection();
+    uc.setRequestProperty(
+      "Authorization", 
+      "Bearer "+jwt
+    );
 
     log.debug("Fetching analysis files from url '{}'", url);
 
-    return Stream.of(MAPPER.readValue(url, ArrayNode.class)).
+    return Stream.of(MAPPER.readValue(uc.getInputStream(), ArrayNode.class)).
       peek(r -> log.debug("Got result {}", r)).
       map(x -> x.path("objectId")).
       map(JsonNode::textValue).
