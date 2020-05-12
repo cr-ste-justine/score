@@ -1,3 +1,6 @@
+![](https://github.com/cr-ste-justine/score/workflows/Build/badge.svg)
+![](https://github.com/cr-ste-justine/score/workflows/Publish/badge.svg)
+
 <h1 align="center">SCORe</h1>
 
 <p align="center">Secure Cloud Object Repository</p>
