@@ -89,6 +89,7 @@ WORKDIR $SCORE_HOME
 CMD mkdir -p  $SCORE_HOME $SCORE_LOGS \
     && java -Dlog.path=$SCORE_LOGS \
     -jar $JAR_FILE \
+	-Xmx1024m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m \
     --spring.config.location=classpath:/application.yml,classpath:/bootstrap.properties
 
 HEALTHCHECK --interval=10s --timeout=10s --start-period=30s --retries=3 CMD curl -f http://localhost:8080/download/ping

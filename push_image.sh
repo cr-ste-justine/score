@@ -1,4 +1,4 @@
-export VERSION=0.4
+export VERSION=0.5
 
 docker build --no-cache -t chusj/overture-score:$VERSION --target server .;
 docker push chusj/overture-score:$VERSION;
